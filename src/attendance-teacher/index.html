@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GPS Coordinate Finder Pro - Survey Grade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="flex items-center gap-3 mb-2">
+          <h1 class="text-3xl font-bold text-gray-800">
+            🗺️ GPS Coordinate Finder
+          </h1>
+          <span
+            class="bg-green-600 text-white text-xs px-2 py-1 rounded-full font-semibold"
+            >PRO</span
+          >
+        </div>
+        <p class="text-gray-600 mb-6">
+          Tool profesional untuk mendapatkan koordinat GPS dengan akurasi
+          survey-grade
+        </p>
+
+        <!-- Current Location -->
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg mb-6">
+          <h2
+            class="text-xl font-semibold text-blue-900 mb-4 flex items-center gap-2">
+            📍 Lokasi Anda Saat Ini
+          </h2>
+
+          <div class="flex gap-3 mb-4">
+            <button
+              id="getLocation"
+              class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all">
+              🎯 Survey Grade (10 readings, ~15s)
+            </button>
+            <button
+              id="getLocationFast"
+              class="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all">
+              ⚡ Quick Mode (5 readings, ~8s)
+            </button>
+          </div>
+
+          <!-- Progress Bar -->
+          <div id="progressBar" class="hidden mb-4">
+            <div class="flex justify-between text-sm text-gray-600 mb-2">
+              <span id="progressText">Initializing GPS...</span>
+              <span id="progressCount">0/10</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+              <div
+                id="progressFill"
+                class="bg-blue-600 h-3 rounded-full transition-all duration-500"
+                style="width: 0%"></div>
+            </div>
+            <div
+              id="readingDetails"
+              class="mt-2 text-xs text-gray-500 space-y-1">
+              <!-- Reading details will appear here -->
+            </div>
+          </div>
+
+          <div id="currentLocation" class="hidden">
+            <div class="bg-white p-4 rounded-lg space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700 font-medium">Latitude:</span>
+                <span id="currentLat" class="text-gray-900 font-mono text-lg"
+                  >-</span
+                >
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700 font-medium">Longitude:</span>
+                <span id="currentLng" class="text-gray-900 font-mono text-lg"
+                  >-</span
+                >
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700 font-medium">Akurasi:</span>
+                <span id="currentAcc" class="text-gray-900">-</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700 font-medium">Quality:</span>
+                <span id="qualityBadge" class="text-gray-900">-</span>
+              </div>
+              <button
+                id="openMaps"
+                class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all">
+                🔍 Buka di Google Maps
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code Generator -->
+        <div
+          class="bg-green-50 border-l-4 border-green-500 p-6 rounded-lg mb-6 hidden"
+          id="codeBlock">
+          <h2 class="text-xl font-semibold text-green-900 mb-4">
+            ✅ Code untuk LocationValidator.js
+          </h2>
+          <pre
+            class="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto text-sm"><code id="generatedCode">// Paste code ini ke LocationValidator.js</code></pre>
+          <button
+            id="copyCode"
+            class="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all">
+            📋 Copy Code
+          </button>
+        </div>
+
+        <!-- Manual Input -->
+        <div class="bg-gray-50 border border-gray-300 p-6 rounded-lg">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            🔧 Atau Input Manual dari Google Maps
+          </h2>
+          <p class="text-sm text-gray-600 mb-4">
+            1. Buka Google Maps<br />
+            2. Cari lokasi sekolah<br />
+            3. Klik kanan → "What's here?"<br />
+            4. Copy koordinat yang muncul (contoh: -6.914744, 107.609810)<br />
+            5. Paste di bawah:
+          </p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Latitude</label
+              >
+              <input
+                type="text"
+                id="manualLat"
+                placeholder="-6.914744"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Longitude</label
+              >
+              <input
+                type="text"
+                id="manualLng"
+                placeholder="107.609810"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          <button
+            id="generateManual"
+            class="mt-4 w-full bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold transition-all">
+            Generate Code dari Input Manual
+          </button>
+        </div>
+
+        <!-- Info -->
+        <div
+          class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg mt-6">
+          <p class="text-sm text-yellow-800">
+            <strong>💡 Tips untuk Akurasi Maksimal:</strong><br />
+            • Ambil koordinat di outdoor (lapangan/halaman utama)<br />
+            • Pastikan cuaca cerah (no heavy clouds)<br />
+            • Tunggu sampai GPS fully settled (gunakan Survey Grade mode)<br />
+            • Hindari area dengan banyak gedung tinggi di sekitarnya
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentCoords = null;
+      let readings = [];
+      let readingCount = 0;
+      let maxReadings = 10;
+      let watchId = null;
+      let isCollecting = false;
+
+      // Survey Grade: 10 readings dengan delay
+      document
+        .getElementById("getLocation")
+        .addEventListener("click", function () {
+          startCollection(10, 2000, this, "Survey Grade");
+        });
+
+      // Quick Mode: 5 readings dengan delay lebih pendek
+      document
+        .getElementById("getLocationFast")
+        .addEventListener("click", function () {
+          startCollection(5, 1500, this, "Quick Mode");
+        });
+
+      function startCollection(numReadings, delayMs, button, modeName) {
+        if (isCollecting) return;
+
+        maxReadings = numReadings;
+        readings = [];
+        readingCount = 0;
+        isCollecting = true;
+
+        button.disabled = true;
+        button.innerHTML = `<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white inline-block"></div> ${modeName} Running...`;
+
+        document.getElementById("progressBar").classList.remove("hidden");
+        document.getElementById("currentLocation").classList.add("hidden");
+        document.getElementById("codeBlock").classList.add("hidden");
+        document.getElementById("readingDetails").innerHTML = "";
+
+        collectReadingWithDelay(delayMs, button, modeName);
+      }
+
+      function collectReadingWithDelay(delayMs, button, modeName) {
+        const startTime = Date.now();
+
+        // Get single high-accuracy reading
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const accuracy = position.coords.accuracy;
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            readingCount++;
+
+            // Filter: hanya terima reading dengan accuracy < 50m
+            if (accuracy < 50) {
+              readings.push({
+                lat: lat,
+                lng: lng,
+                accuracy: accuracy,
+                timestamp: Date.now(),
+              });
+
+              // Update progress
+              const progress = (readingCount / maxReadings) * 100;
+              document.getElementById("progressFill").style.width =
+                progress + "%";
+              document.getElementById(
+                "progressCount"
+              ).textContent = `${readingCount}/${maxReadings}`;
+              document.getElementById(
+                "progressText"
+              ).textContent = `Reading #${readingCount} - Accuracy: ±${Math.round(
+                accuracy
+              )}m`;
+
+              // Add reading detail
+              const detail = document.createElement("div");
+              detail.className = "flex justify-between";
+              detail.innerHTML = `
+                <span>Reading #${readingCount}:</span>
+                <span class="font-mono">${lat.toFixed(6)}, ${lng.toFixed(
+                6
+              )}</span>
+                <span class="text-green-600">±${Math.round(accuracy)}m ✓</span>
+              `;
+              document.getElementById("readingDetails").appendChild(detail);
+            } else {
+              // Rejected reading
+              const detail = document.createElement("div");
+              detail.className = "flex justify-between text-red-600";
+              detail.innerHTML = `
+                <span>Reading #${readingCount}:</span>
+                <span>Rejected (accuracy too low: ±${Math.round(
+                  accuracy
+                )}m)</span>
+              `;
+              document.getElementById("readingDetails").appendChild(detail);
+            }
+
+            // Continue or finish
+            if (readingCount >= maxReadings && readings.length >= 3) {
+              finishCollection(button, modeName);
+            } else if (readingCount >= maxReadings * 1.5) {
+              // Too many rejected readings
+              alert(
+                "⚠️ Terlalu banyak reading ditolak. Pastikan Anda di outdoor dengan GPS signal baik, lalu coba lagi."
+              );
+              resetCollection(button, modeName);
+            } else {
+              // Wait before next reading
+              const elapsed = Date.now() - startTime;
+              const waitTime = Math.max(0, delayMs - elapsed);
+
+              document.getElementById(
+                "progressText"
+              ).textContent = `Waiting ${Math.round(
+                waitTime / 1000
+              )}s before next reading...`;
+
+              setTimeout(() => {
+                collectReadingWithDelay(delayMs, button, modeName);
+              }, waitTime);
+            }
+          },
+          (error) => {
+            alert("❌ Gagal mendapatkan lokasi: " + error.message);
+            resetCollection(button, modeName);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 20000, // 20 detik untuk cold start
+            maximumAge: 0,
+          }
+        );
+      }
+
+      function finishCollection(button, modeName) {
+        if (readings.length < 3) {
+          alert(
+            "❌ Tidak cukup reading yang valid. Coba lagi di lokasi dengan GPS signal lebih baik."
+          );
+          resetCollection(button, modeName);
+          return;
+        }
+
+        // Weighted average berdasarkan accuracy (reading lebih akurat = weight lebih besar)
+        const totalWeight = readings.reduce(
+          (sum, r) => sum + 1 / r.accuracy,
+          0
+        );
+
+        const avgLat =
+          readings.reduce((sum, r) => sum + r.lat * (1 / r.accuracy), 0) /
+          totalWeight;
+        const avgLng =
+          readings.reduce((sum, r) => sum + r.lng * (1 / r.accuracy), 0) /
+          totalWeight;
+        const avgAccuracy =
+          readings.reduce((sum, r) => sum + r.accuracy, 0) / readings.length;
+
+        // Calculate deviation
+        const latStdDev = Math.sqrt(
+          readings.reduce((sum, r) => sum + Math.pow(r.lat - avgLat, 2), 0) /
+            readings.length
+        );
+        const lngStdDev = Math.sqrt(
+          readings.reduce((sum, r) => sum + Math.pow(r.lng - avgLng, 2), 0) /
+            readings.length
+        );
+
+        const maxDeviation = Math.max(latStdDev, lngStdDev) * 111000; // Convert to meters
+
+        currentCoords = {
+          lat: avgLat,
+          lng: avgLng,
+          accuracy: avgAccuracy,
+          deviation: maxDeviation,
+          readings: readings.length,
+          mode: modeName,
+        };
+
+        displayResults(currentCoords);
+
+        button.textContent = `✅ ${modeName} Complete!`;
+        button.disabled = false;
+        isCollecting = false;
+
+        document.getElementById("progressBar").classList.add("hidden");
+      }
+
+      function resetCollection(button, modeName) {
+        button.textContent =
+          modeName === "Survey Grade"
+            ? "🎯 Survey Grade (10 readings, ~15s)"
+            : "⚡ Quick Mode (5 readings, ~8s)";
+        button.disabled = false;
+        isCollecting = false;
+        document.getElementById("progressBar").classList.add("hidden");
+      }
+
+      function displayResults(coords) {
+        document.getElementById("currentLat").textContent =
+          coords.lat.toFixed(6);
+        document.getElementById("currentLng").textContent =
+          coords.lng.toFixed(6);
+        document.getElementById("currentAcc").innerHTML = `
+          ±${Math.round(coords.accuracy)}m avg
+          <br><span class="text-xs text-gray-500">Deviation: ±${Math.round(
+            coords.deviation
+          )}m dari ${coords.readings} valid readings</span>
+        `;
+
+        // Quality badge
+        let quality = "";
+        let badgeClass = "";
+        if (coords.deviation < 3) {
+          quality = "Excellent";
+          badgeClass = "bg-green-600 text-white";
+        } else if (coords.deviation < 5) {
+          quality = "Very Good";
+          badgeClass = "bg-blue-600 text-white";
+        } else if (coords.deviation < 10) {
+          quality = "Good";
+          badgeClass = "bg-yellow-600 text-white";
+        } else if (coords.deviation < 20) {
+          quality = "Fair";
+          badgeClass = "bg-orange-600 text-white";
+        } else {
+          quality = "Poor";
+          badgeClass = "bg-red-600 text-white";
+        }
+
+        document.getElementById("qualityBadge").innerHTML = `
+          <span class="${badgeClass} px-3 py-1 rounded-full text-sm font-semibold">${quality}</span>
+          <span class="text-xs text-gray-500 ml-2">(${coords.mode})</span>
+        `;
+
+        document.getElementById("currentLocation").classList.remove("hidden");
+        document.getElementById("codeBlock").classList.remove("hidden");
+
+        generateCode(coords.lat, coords.lng, coords.deviation);
+      }
+
+      // Open Google Maps
+      document
+        .getElementById("openMaps")
+        .addEventListener("click", function () {
+          if (currentCoords) {
+            window.open(
+              `https://www.google.com/maps?q=${currentCoords.lat},${currentCoords.lng}`,
+              "_blank"
+            );
+          }
+        });
+
+      // Generate code from manual input
+      document
+        .getElementById("generateManual")
+        .addEventListener("click", function () {
+          const lat = parseFloat(document.getElementById("manualLat").value);
+          const lng = parseFloat(document.getElementById("manualLng").value);
+
+          if (isNaN(lat) || isNaN(lng)) {
+            alert("❌ Koordinat tidak valid! Pastikan format angka benar.");
+            return;
+          }
+
+          generateCode(lat, lng, null);
+          document.getElementById("codeBlock").classList.remove("hidden");
+        });
+
+      // Generate code
+      function generateCode(lat, lng, deviation) {
+        let radiusRecommendation = "";
+        if (deviation !== null) {
+          if (deviation < 5) {
+            radiusRecommendation =
+              "// Quality Excellent - bisa pakai radius 150-200m";
+          } else if (deviation < 10) {
+            radiusRecommendation =
+              "// Quality Good - recommended radius 200-250m";
+          } else {
+            radiusRecommendation = "// Quality Fair - recommended radius 300m+";
+          }
+        }
+
+        const code = `const SCHOOL_COORDS = {
+  lat: ${lat.toFixed(6)},  // Koordinat sekolah
+  lng: ${lng.toFixed(6)}
+};
+
+const SCHOOL_RADIUS = 300; // 300 meter radius
+${radiusRecommendation}`;
+
+        document.getElementById("generatedCode").textContent = code;
+      }
+
+      // Copy code
+      document
+        .getElementById("copyCode")
+        .addEventListener("click", function () {
+          const code = document.getElementById("generatedCode").textContent;
+          navigator.clipboard.writeText(code).then(() => {
+            const btn = this;
+            const originalText = btn.textContent;
+            btn.textContent = "✅ Code Berhasil Di-copy!";
+            btn.classList.remove("bg-green-600", "hover:bg-green-700");
+            btn.classList.add("bg-green-800");
+            setTimeout(() => {
+              btn.textContent = originalText;
+              btn.classList.remove("bg-green-800");
+              btn.classList.add("bg-green-600", "hover:bg-green-700");
+            }, 2000);
+          });
+        });
+    </script>
+  </body>
+</html>
